@@ -17,6 +17,10 @@ export function interact(g) {
   }
   if (p.car) {
     const car = p.car;
+    if (car.type === 'boat' && car.x > 2390 && car.y < 2050) {
+      g.toast('Bring the boat alongside the quay before stepping out.');
+      return;
+    }
     p.car = null;
     p.x += Math.sin(car.angle) * 34;
     p.y -= Math.cos(car.angle) * 34;
@@ -44,7 +48,10 @@ export function interact(g) {
   }
   const car = g.cars.filter(c => distance(c, p) < (c.type === 'boat' ? 100 : 65)).sort((a, b) => distance(a, p) - distance(b, p))[0];
   if (car) {
-    if (car.occupied || car.police) g.crime(1);
+    if (car.occupied || car.police) {
+      g.crime(1);
+      g.peds.push({ x: car.x + 30, y: car.y, angle: 0, color: '#c59d70', skin: '#bd8b69', flee: 8, down: 0 });
+    }
     car.traffic = false;
     p.car = car;
     g.toast(types[car.type].name + ' · R radio · Space handbrake · E exit');

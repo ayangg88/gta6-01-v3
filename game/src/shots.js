@@ -43,12 +43,14 @@ export function stageShot(g, shot) {
       g.cars.push(car);
     }
     for (let i = 0; i < 8; i++) g.cars.push(createCar(2248 + i % 2 * 34, 350 + i * 53, i % 3 ? 'sedan' : 'taxi', -Math.PI / 2));
-    for (let i = 0; i < 34; i++) g.peds.push({ x: 1660 + i % 9 * 65, y: 392 + Math.floor(i / 9) * 118 + i % 3 * 10, angle: i, color: ['#e99570', '#f8e8b3', '#43848a', '#9b6475'][i % 4], skin: '#c68f67' });
+    for (let i = 0; i < 34; i++) g.peds.push({ x: 1640 + i % 9 * 65 + Math.sin(i * 7) * 14, y: 391 + Math.floor(i / 9) * 118 + Math.cos(i * 3) * 13, angle: i, color: ['#e99570', '#f8e8b3', '#43848a', '#9b6475'][i % 4], skin: '#c68f67' });
     g.player.angle = -0.5;
   }
   if (shot === 'mission') {
     g.mission = { index: 1, step: 1, progress: 2, timer: 0 };
     g.wanted = 2;
+    g.player.x = 1150;
+    g.player.y = 1230;
     g.player.angle = -Math.PI / 2;
     openDialogue(g, 'Milo Quill / radio', 'That envelope belongs to the Harbor Circle. Take it, Rae. I will hold the alley. The second you hear sirens, we move.');
     g.dialogue.shown = 999;
@@ -57,11 +59,23 @@ export function stageShot(g, shot) {
     g.peds.push({ x: 1120, y: 1200, angle: Math.PI / 2, color: '#63a99e' });
     g.officers.push({ x: 1330, y: 1250, health: 70, cooldown: 1 });
   }
-  for (let i = 0; i < 11; i++) {
-    const cx = shot === 'drive' ? 1950 : x - 300;
-    g.cars.push(createCar(cx + i % 2 * 28, y - 260 + i * 61, ['taxi', 'sedan', 'van'][i % 3], Math.PI / 2));
+  if (shot !== 'street') {
+    const road = shot === 'drive' ? 1950 : shot === 'mission' ? 1050 : 450;
+    const streetY = shot === 'drive' ? 1650 : shot === 'mission' ? 1050 : 450;
+    for (let i = 0; i < 7; i++) {
+      const horizontal = i > 3;
+      const car = createCar(horizontal ? x - (shot === 'drive' ? 700 : 410) + i * (shot === 'drive' ? 88 : 114) : road + (i % 2 ? 18 : -18), horizontal ? streetY + (i % 2 ? 18 : -18) : y - 220 + i * 143, ['taxi', 'sedan', 'van', 'pickup', 'sports', 'sedan', 'taxi'][i], horizontal ? 0 : Math.PI / 2);
+      g.cars.push(car);
+    }
   }
-  for (let i = 0; i < 18; i++) g.peds.push({ x: (shot === 'drive' ? 2310 : x - 55) + i % 3 * 23, y: y - 220 + Math.floor(i / 3) * 76, color: ['#4a8992', '#f2c18b', '#bc746b'][i % 3], angle: i });
+  if (shot !== 'street') {
+    for (let i = 0; i < 13; i++) {
+      const side = i % 2 ? 1 : -1;
+      const px = shot === 'drive' ? 2310 + Math.sin(i * 3) * 9 : x + side * (52 + i % 3 * 5);
+      const py = y - 225 + i * 38 + Math.cos(i * 4) * 16;
+      g.peds.push({ x: px, y: py, color: ['#4a8992', '#f2c18b', '#bc746b'][i % 3], angle: i * 1.7 });
+    }
+  }
   if (shot === 'drive') {
     for (let i = 0; i < 6; i++) {
       const boat = createCar(2430 + i % 2 * 170, 1495 + Math.floor(i / 2) * 185, 'boat', i % 2 ? -0.3 : Math.PI / 2);

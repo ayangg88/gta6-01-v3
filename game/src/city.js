@@ -22,7 +22,7 @@ for (let col = 0; col < 8; col++) {
       continue;
     }
     for (let n = 0; n < 4; n++) {
-      buildings.push({ x: x + n % 2 * 90, y: y + Math.floor(n / 2) * 91, w: 73 + random() * 9, h: 65 + random() * 16, color: choose(palettes), roof: choose(['#4d717c', '#b57461', '#b5a077', '#65918e', '#747e89']), high: col < 3 && row < 3 });
+      buildings.push({ x: x + n % 2 * 90, y: y + Math.floor(n / 2) * 91, w: 61 + random() * 24, h: 57 + random() * 27, color: choose(palettes), roof: choose(['#4d717c', '#b57461', '#b5a077', '#65918e', '#747e89']), high: col < 3 && row < 3 });
     }
   }
 }
@@ -52,6 +52,7 @@ export function moveBody(body, dx, dy, radius = 10) {
   if (!blocked(body.x, body.y + dy, radius)) body.y += dy;
 }
 export function district(x, y) {
+  if (x > 1000 && x < 1500 && y > 1000 && y < 1450) return 'LANTERN / OLD MARKET';
   if (x > 2070 && y > 1300) return 'THE TIDELINE / MARINA';
   if (x > 1650) return 'SOLANA / BEACHFRONT';
   if (y > 1450) return 'IRON QUAY / INDUSTRIAL';

@@ -27,6 +27,7 @@ export function missionTarget(g) {
   return stories[g.mission.index].steps[g.mission.step];
 }
 export function objective(g) {
+  if (g.robbery) return 'STORE ALARM · Emptying till ' + Math.min(100, Math.floor(g.robbery.time / 8 * 100)) + '% · Stay close';
   if (g.race) return 'STREET CIRCUIT · checkpoint ' + (g.race.step + 1) + '/4 · ' + Math.ceil(g.race.left) + 's';
   if (g.fare) return 'TAXI FARE · Drive your passenger to the diamond marker';
   if (!g.mission) return g.completed === 8 ? 'Port Meridian is yours. Explore, race, or work the streets.' : 'Meet Inez at the pink phone marker · E to take a contract';
@@ -40,6 +41,23 @@ export function updateMissions(g, dt) {
   m.timer += dt;
   let done = false;
   if (step.x !== undefined) done = distance(g.player, step) < 75;
+  if (m.index === 5 && m.timer > 90) {
+    g.mission = null;
+    g.toast('Circuit timed out. Return to Inez to retry the contract.');
+    return;
+  }
+  if (m.index === 2 && m.step === 2) {
+    if (!m.courier) {
+      m.courier = createCar(2650, 1780, 'boat', 0);
+      m.courier.color = '#e6b270';
+      g.cars.push(m.courier);
+    }
+    m.courier.x = 2640 + Math.cos(m.timer * 0.28) * 145;
+    m.courier.y = 1870 + Math.sin(m.timer * 0.28) * 165;
+    step.x = m.courier.x;
+    step.y = m.courier.y;
+    done = g.player.car?.type === 'boat' && distance(g.player, m.courier) < 90;
+  }
   if (step.type === 'car') done = !!g.player.car;
   if (step.type === 'boat') done = g.player.car?.type === 'boat';
   if (step.type === 'taxi') done = g.player.car?.type === 'taxi';
@@ -49,7 +67,8 @@ export function updateMissions(g, dt) {
       g.crime(m.index === 7 ? 5 : 2);
       openDialogue(g, m.index === 7 ? 'Inez Vela' : 'Sunstop cashier', m.index === 7 ? 'Keep them outside, Rae. The lock is almost open. This city owes us a sunrise.' : 'All right! The till is open. Take the envelope. The Circle will hear about this.');
     }
-    if (!g.dialogue) m.progress += dt;
+    const entrance = story.steps[Math.max(0, m.step - 1)];
+    if (!g.dialogue && distance(g.player, entrance) < 150) m.progress += dt;
     done = m.progress > 8;
   }
   if (step.type === 'fight') {
@@ -62,6 +81,7 @@ export function updateMissions(g, dt) {
     done = g.enemies.every(e => e.health <= 0);
   }
   if (done) {
+    if (m.index === 0 && m.step === 0) g.crime(2);
     m.step++;
     m.progress = 0;
     m.spawned = false;

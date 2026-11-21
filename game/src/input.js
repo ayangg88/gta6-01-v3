@@ -4,7 +4,7 @@ export const mouse = { x: 800, y: 360, down: false };
 addEventListener('keydown', event => {
   if (!keys.has(event.code)) pressed.add(event.code);
   keys.add(event.code);
-  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(event.code)) event.preventDefault();
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'F5', 'F9'].includes(event.code)) event.preventDefault();
 });
 addEventListener('keyup', event => keys.delete(event.code));
 addEventListener('blur', () => keys.clear());

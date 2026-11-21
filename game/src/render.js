@@ -146,8 +146,30 @@ function drawCity(g) {
     }
   }
   for (const b of buildings) building(b);
+  // Small gardens and swimming pools distinguish the hillside villas.
+  for (let i = 0; i < 4; i++) {
+    const hx = 1170 + i * 300;
+    rect(hx - 55, 248, 42, 118, '#9caf78');
+    rect(hx - 50, 270, 31, 54, '#e7d7aa');
+    rect(hx - 47, 274, 25, 46, '#72c6d0');
+    palm(hx - 35, 345);
+  }
   for (const s of shops) {
+    rect(s.x - 50, s.y + 47, 100, 30, '#d3bf94');
+    for (let i = 0; i < 4; i++) {
+      line(s.x - 48 + i * 31, s.y + 48, s.x - 48 + i * 31, s.y + 76, '#f4e8bd', 2);
+    }
+    circle(s.x + 76, s.y + 12, 13, '#fff0c9');
+    circle(s.x + 76, s.y + 12, 8, s.color);
+    rect(s.x + 62, s.y + 32, 28, 5, '#8f7852');
     building({ x: s.x - 48, y: s.y - 37, w: 96, h: 74, color: s.color, roof: '#f1d8ac', high: false });
+    if (s.type === 'store') {
+      for (let i = 0; i < 3; i++) {
+        rect(s.x + 66, s.y - 33 + i * 40, 28, 22, '#ae855c');
+        rect(s.x + 63, s.y - 40 + i * 40, 34, 10, i % 2 ? '#80b4a0' : '#db9770');
+        for (let j = 0; j < 5; j++) circle(s.x + 70 + j * 4, s.y - 22 + i * 40, 2, i % 2 ? '#e7cf71' : '#d87f65');
+      }
+    }
     rect(s.x - 48, s.y + 21, 96, 14, s.color);
     for (let i = 0; i < 8; i++) rect(s.x - 48 + i * 12, s.y + 21, 6, 14, '#fff2d3');
     rect(s.x - 34, s.y + 35, 24, 6, '#355c68');
@@ -310,7 +332,15 @@ export function render(g) {
   for (const ped of g.peds) person(ped);
   for (const cop of g.officers) if (cop.health > 0) person(cop, false, true);
   for (const enemy of g.enemies) if (enemy.health > 0) person(enemy);
-  if (!g.player.car) person(g.player, true);
+  if (!g.player.car) {
+    circle(g.player.x, g.player.y, 19, '#fff1b72b');
+    person(g.player, true);
+    C.strokeStyle = '#fce1a0';
+    C.lineWidth = 2;
+    C.beginPath();
+    C.arc(g.player.x, g.player.y, 20, 0.5, 2.5);
+    C.stroke();
+  }
   else {
     C.strokeStyle = '#ffe9a0';
     C.lineWidth = 2;
