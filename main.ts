@@ -1,5 +1,5 @@
 // Meridian Heat ships entirely as local static files; copying preserves reproducible bytes.
-import { cpSync, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
@@ -17,12 +17,26 @@ for (const file of [
 ]) {
   try {
     const info = statSync(join(here, file));
-    if (!info.isFile()) throw new Error('expected a regular file');
-    if (file.startsWith('screenshots/') && info.size > 256 * 1024) {
-      throw new Error(`size ${info.size} bytes exceeds the 256 KiB limit`);
+    if (!info.isFile()) throw new Error('missing file check failed: expected a regular file');
+    if (file.startsWith('screenshots/')) {
+      if (info.size > 256 * 1024) {
+        throw new Error(`too large check failed: size ${info.size} bytes exceeds the 256 KiB limit`);
+      }
+      const png = readFileSync(join(here, file));
+      if (png.length < 24 ||
+          !png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ||
+          png.readUInt32BE(8) !== 13 || png.toString('ascii', 12, 16) !== 'IHDR') {
+        throw new Error('wrong dimensions check failed: invalid PNG header; expected 1280x720');
+      }
+      const width = png.readUInt32BE(16);
+      const height = png.readUInt32BE(20);
+      if (width !== 1280 || height !== 720) {
+        throw new Error(`wrong dimensions check failed: got ${width}x${height}; expected 1280x720`);
+      }
     }
   } catch (error) {
-    console.error(`Input validation failed for ${file}: ${error.message}`);
+    const reason = error.code === 'ENOENT' ? 'missing file check failed: file does not exist' : error.message;
+    console.error(`Input validation failed for ${file}: ${reason}`);
     process.exit(1);
   }
 }
