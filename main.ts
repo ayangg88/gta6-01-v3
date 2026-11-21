@@ -1,11 +1,31 @@
 // Meridian Heat ships entirely as local static files; copying preserves reproducible bytes.
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+// Check the required input files before creating or changing any output.
+for (const file of [
+  'game/index.html',
+  'screenshots/1-cover.png',
+  'screenshots/2-street.png',
+  'screenshots/3-mission.png',
+  'screenshots/4-drive.png',
+]) {
+  try {
+    const info = statSync(join(here, file));
+    if (!info.isFile()) throw new Error('expected a regular file');
+    if (file.startsWith('screenshots/') && info.size > 256 * 1024) {
+      throw new Error(`size ${info.size} bytes exceeds the 256 KiB limit`);
+    }
+  } catch (error) {
+    console.error(`Input validation failed for ${file}: ${error.message}`);
+    process.exit(1);
+  }
+}
 
 mkdirSync(out, { recursive: true });
 cpSync(join(here, 'game'), join(out, 'game'), { recursive: true });
