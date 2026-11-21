@@ -10,7 +10,7 @@ export function updateWeapons(g, dt) {
   const p = g.player;
   for (let i = 0; i < 3; i++) if (tap('Digit' + (i + 1)) && p.owned[i]) p.weapon = i;
   p.cooldown -= dt;
-  if (!p.car) p.angle = Math.atan2(mouse.y - 360, mouse.x - 640);
+  if (!p.car) p.angle = Math.atan2(mouse.y - (p.y - g.camera.y + 360), mouse.x - (p.x - g.camera.x + 640));
   if (mouse.down && !p.car && p.cooldown <= 0 && p.ammo[p.weapon] > 0) {
     const w = weapons[p.weapon];
     p.cooldown = w.delay;

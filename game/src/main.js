@@ -1,4 +1,4 @@
-import { random, distance } from './random.js';
+import { random, distance, clamp } from './random.js';
 import { held, tap, pressed } from './input.js';
 import { moveBody } from './city.js';
 import { populateVehicles, updateVehicles } from './vehicles.js';
@@ -15,7 +15,7 @@ import { render } from './render.js';
 
 const g = {
   player: { x: 150, y: 430, angle: -Math.PI / 2, car: null, health: 100, armor: 0, ammo: [120, 0, 0], owned: [true, false, false], weapon: 0, cooldown: 0 },
-  camera: { x: 150, y: 430 },
+  camera: { x: 640, y: 430 },
   cars: populateVehicles(),
   peds: populatePedestrians(),
   officers: [],
@@ -158,8 +158,8 @@ function update(dt) {
   g.particles = g.particles.filter(p => p.life > 0);
   const car = g.player.car;
   const look = car ? car.speed * 0.23 : 0;
-  g.camera.x += (g.player.x + Math.cos(g.player.angle) * look - g.camera.x) * Math.min(1, dt * 6);
-  g.camera.y += (g.player.y + Math.sin(g.player.angle) * look - g.camera.y) * Math.min(1, dt * 6);
+  g.camera.x += (clamp(g.player.x + Math.cos(g.player.angle) * look, 640, 2360) - g.camera.x) * Math.min(1, dt * 6);
+  g.camera.y += (clamp(g.player.y + Math.sin(g.player.angle) * look, 360, 2040) - g.camera.y) * Math.min(1, dt * 6);
   g.audio.update(g, dt);
   if (g.player.health <= 0 || g.arrest > 3) {
     g.dead = g.arrest > 3 ? 'BUSTED' : 'WASTED';
